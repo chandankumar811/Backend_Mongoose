@@ -1,5 +1,6 @@
 import dotenv from "dotenv"
 import connectDB from "./db/index.js";
+import { app } from "./app.js";
 
 
 dotenv.config({
@@ -12,11 +13,10 @@ connectDB()
   })
   app.on("error", (error) => {
     console.log("ERROR: to tun server", error);
-    throw error
   })
 })
-.catch((error) => {
-  console.log("MONGO db connection failed !!!", error)
+.catch((err) => {
+  console.log("MONGO db connection failed !!!", err)
 })
 
 
