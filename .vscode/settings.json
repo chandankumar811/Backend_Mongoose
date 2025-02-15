@@ -1,4 +1,5 @@
 {
     "github.showAvatar": true,
-    "github.copilot.editor.enableAutoCompletions": false
+    "github.copilot.editor.enableAutoCompletions": false,
+    "github.copilot.chat.scopeSelection": false
 }
