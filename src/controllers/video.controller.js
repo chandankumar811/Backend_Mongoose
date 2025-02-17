@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Video } from "../models/video.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
+import { application } from "express";
 
 const getAllVideos = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
@@ -29,20 +30,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
     .skip((pageNumber - 1) * limitNumber)
     .limit(limitNumber);
 
-    const totalVideos = await Video.countDocuments(filter)
+  const totalVideos = await Video.countDocuments(filter);
 
-    return res
-    .status(200)
-    .json(new ApiResponse(
-      200, 
+  return res.status(200).json(
+    new ApiResponse(
+      200,
       {
-        totalVideos, 
+        totalVideos,
         totalPages: Math.ceil(totalVideos / limitNumber),
         currentPage: pageNumber,
-        videos
-    },
-    "Videos fetch successfully"
-  ))
+        videos,
+      },
+      "Videos fetch successfully"
+    )
+  );
 });
 
 const publisAVideo = asyncHandler(async (req, res) => {
@@ -206,11 +207,43 @@ const deleteVideo = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "video deleted sucessfully"));
 });
 
+const togglePublishStatus = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  console.log(videoId)
+
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "Invalid video id");
+  }
+
+  const video = await Video.findById(videoId);
+
+  // console.log(video)
+
+  if (!video) {
+    throw new ApiError(404, "Video is not found");
+  }
+
+  video.isPublished = !video.isPublished;
+  await video.save();
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        video,
+        `Video ${video.isPublished ? "published" : "unpublished"} sucessfully`
+      )
+    );
+});
+
 export {
   publisAVideo,
   getVideoById,
   updateVideoDetails,
   updateVideoThumbnail,
   deleteVideo,
-  getAllVideos
+  getAllVideos,
+  togglePublishStatus,
 };
