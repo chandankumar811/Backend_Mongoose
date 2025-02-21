@@ -40,13 +40,77 @@ const updateTweet = asyncHandler(async(req, res) => {
         throw new ApiError(401, "Invalid tweet id")
     }
 
+    const {content} = req.body
+
+    if(!content){
+        throw new ApiError(400, "Content is required")
+    }
+
     const user = await User.findById(req.user?._id)
 
     if(!user){
         throw new ApiError(401, "user is not found")
     }
 
+    const tweet = await Tweet.findById(tweetId)
+
+    if(!tweet){
+        throw new ApiError(402, "Tweet is not found")
+    }
+
+    if(user._id.toString() !== tweet.owner.toString()){
+        throw new (ApiError(400, "You can only update your own comment"))
+    }
+
+    const updatedTweet = await Tweet.findByIdAndUpdate(
+        tweetId,
+        {
+            $set: {
+                content: content
+            }
+        },{
+            new: true
+        }
+    )
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, updatedTweet, "Tweet updated successfully"))
 
 })
 
-export {publishATweet}
+const getUserTweet = asyncHandler(async(req, res) => {
+    
+})
+
+const deleteTweet = asyncHandler(async(req, res) => {
+    const {tweetId} = req.params
+    const user = await User.findById(req.user?._id)
+
+    if(!isValidObjectId(tweetId)){
+        throw new ApiError(401, "Invalid tweet id")
+    }
+
+    if(!user){
+        throw new ApiError(402, "User is not found")
+    }
+
+    const tweet = await Tweet.findById(tweetId)
+
+    if(!tweet){
+        throw new ApiError(402, "Tweet is not found")
+    }
+
+    if(user._id.toString() !== tweet.owner.toString()){
+        throw new (ApiError(400, "You can only update your own comment"))
+    }
+
+    await Tweet.findByIdAndDelete(tweetId)
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, "Tweet deleted successfully"))
+    
+})
+
+export {publishATweet, updateTweet, deleteTweet}
