@@ -70,11 +70,15 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
-  if (isValidObjectId(playlistId)) {
+  if (!isValidObjectId(playlistId)) {
     throw new ApiError(401, "Invalid playlist Id");
   }
 
-  if (isValidObjectId(videoId)) {
+
+
+  console.log("playlist id", playlistId, "and video", videoId);
+
+  if (!isValidObjectId(videoId)) {
     throw new ApiError(401, "Invalid video Id");
   }
 
@@ -104,7 +108,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid playlistId or videoId");
   }
 
-  const playlist = await findByIdAndUpdate(
+  const playlist = await Playlist.findByIdAndUpdate(
     playlistId,
     {
       $pull: {

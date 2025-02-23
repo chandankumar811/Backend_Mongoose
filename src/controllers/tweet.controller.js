@@ -80,7 +80,19 @@ const updateTweet = asyncHandler(async(req, res) => {
 })
 
 const getUserTweet = asyncHandler(async(req, res) => {
-    
+    const {userId} = req.params
+    if(!isValidObjectId(userId)){
+        throw new ApiError(401, "Invalid user id")
+    }
+
+    const tweet = await Tweet.find({owner: userId})
+    if(!tweet){
+        throw new ApiError(401, "Error to fetch user tweet")
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, tweet, "Tweet fetched successfully"))
 })
 
 const deleteTweet = asyncHandler(async(req, res) => {
@@ -113,4 +125,4 @@ const deleteTweet = asyncHandler(async(req, res) => {
     
 })
 
-export {publishATweet, updateTweet, deleteTweet}
+export {publishATweet, updateTweet, deleteTweet, getUserTweet}
