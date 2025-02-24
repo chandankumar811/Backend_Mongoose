@@ -1,22 +1,60 @@
-import { Subscription } from "../models/subscription.model";
-import { User } from "../models/user.model";
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
+import { Subscription } from "../models/subscription.model.js";
+import { User } from "../models/user.model.js";
+import { Video } from "../models/video.model.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-const getChannelStats = asyncHandler(async(req, res) => {
-    const channelId =  req.user?._id
+const getChannelStats = asyncHandler(async (req, res) => {
+  const channelId = req.user?._id;
 
-    if(!channelId){
-        throw new ApiError(401, "Error to get channel id")
-    }
+  console.log(channelId);
 
-    const noOfSubscriber = await Subscription.countDocuments(channelId)
+  if (!channelId) {
+    throw new ApiError(401, "Error to get channel id");
+  }
 
+  const noOfSubscriber = await Subscription.countDocuments({
+    channel: channelId,
+  });
 
-    return res
+  if (!noOfSubscriber) {
+    throw new ApiError(401, "Error to fetch number of subscriber");
+  }
+
+  const totalNoOfVideos = await Video.countDocuments({ owner: channelId });
+  console.log("number of video", totalNoOfVideos);
+
+  
+  return res
     .status(200)
-    .json(new ApiResponse(200, noOfSubscriber, "fetch successfull"))
-})
+    .json(
+      new ApiResponse(
+        200,
+        { noOfSubscriber, totalNoOfVideos },
+        "fetch successfull"
+      )
+    );
+});
 
-export {getChannelStats}
+const getAllChannelVideo = asyncHandler(async (req, res) => {
+  const channelId = req.user?._id;
+
+  if (!channelId) {
+    throw new ApiError(401, "Error to get channel id");
+  }
+
+  const totalVideo = await Video.find({ owner: channelId });
+
+  if (!totalVideo) {
+    throw new ApiError(401, "Error to fetch video");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, totalVideo, "Channel videos fetched successfull")
+    );
+});
+
+export { getChannelStats, getAllChannelVideo };
