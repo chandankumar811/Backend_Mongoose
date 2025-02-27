@@ -23,15 +23,22 @@ const getChannelStats = asyncHandler(async (req, res) => {
   }
 
   const totalNoOfVideos = await Video.countDocuments({ owner: channelId });
-  console.log("number of video", totalNoOfVideos);
+  // console.log("number of video", totalNoOfVideos);
 
-  
+  const video = await Video.find({owner: channelId});
+  if (!video) {
+    throw new ApiError(401, "Error to fetch video view");
+  }
+  console.log(video)
+
+  let totalViews = video.reduce((sum, video) => sum + (video.view || 0), 0);
+
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        { noOfSubscriber, totalNoOfVideos },
+        { noOfSubscriber, totalNoOfVideos, totalViews },
         "fetch successfull"
       )
     );
@@ -57,4 +64,4 @@ const getAllChannelVideo = asyncHandler(async (req, res) => {
     );
 });
 
-export { getChannelStats, getAllChannelVideo };
+export { getChannelStats, getAllChannelVideo};
